@@ -1,41 +1,48 @@
 package com.RobertoPalMol.TribeMe_Backend.Entity;
 
 import jakarta.persistence.*;
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tribe")
 public class Tribe {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_tribe")
+    private Long idTribe;
 
-    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
     private String description;
 
-    private Integer members;
+    @Column(name = "max_members")
+    private Integer maxMembers;
 
-    private String photo;
+    @Lob
+    private byte[] photo;
 
-    private Boolean isPrivate;
+    @Column(name = "private_tribe")
+    private Boolean privateTribe = false;
 
     @Column(name = "private_event")
-    private Boolean privateEvent;
+    private Boolean privateEvent = false;
 
     @ManyToOne
-    @JoinColumn(name = "creator_id", nullable = false)
+    @JoinColumn(name = "id_creator", nullable = false)
     private User creator;
 
-    // Getters, Setters y Overrides de equals/hashCode
-    public Long getId() {
-        return id;
+    @Column(name = "creation_time", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime creationTime;
+
+    // Getters and Setters
+
+    public Long getIdTribe() {
+        return idTribe;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdTribe(Long idTribe) {
+        this.idTribe = idTribe;
     }
 
     public String getName() {
@@ -54,28 +61,28 @@ public class Tribe {
         this.description = description;
     }
 
-    public Integer getMembers() {
-        return members;
+    public Integer getMaxMembers() {
+        return maxMembers;
     }
 
-    public void setMembers(Integer members) {
-        this.members = members;
+    public void setMaxMembers(Integer maxMembers) {
+        this.maxMembers = maxMembers;
     }
 
-    public String getPhoto() {
+    public byte[] getPhoto() {
         return photo;
     }
 
-    public void setPhoto(String photo) {
+    public void setPhoto(byte[] photo) {
         this.photo = photo;
     }
 
-    public Boolean getIsPrivate() {
-        return isPrivate;
+    public Boolean getPrivateTribe() {
+        return privateTribe;
     }
 
-    public void setIsPrivate(Boolean isPrivate) {
-        this.isPrivate = isPrivate;
+    public void setPrivateTribe(Boolean privateTribe) {
+        this.privateTribe = privateTribe;
     }
 
     public Boolean getPrivateEvent() {
@@ -94,16 +101,11 @@ public class Tribe {
         this.creator = creator;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Tribe tribe = (Tribe) o;
-        return id.equals(tribe.id);
+    public LocalDateTime getCreationTime() {
+        return creationTime;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public void setCreationTime(LocalDateTime creationTime) {
+        this.creationTime = creationTime;
     }
 }

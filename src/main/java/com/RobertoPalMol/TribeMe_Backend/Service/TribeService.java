@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Service
 public class TribeService {
+
     @Autowired
     private TribeRepository tribeRepository;
 
@@ -26,8 +27,30 @@ public class TribeService {
         return tribeRepository.save(tribe);
     }
 
-    public void deleteTribe(Long id) {
-        tribeRepository.deleteById(id);
+    public Optional<Tribe> updateTribe(Long id, Tribe tribeDetails) {
+        Optional<Tribe> tribe = tribeRepository.findById(id);
+        if (tribe.isPresent()) {
+            Tribe updatedTribe = tribe.get();
+            updatedTribe.setName(tribeDetails.getName());
+            updatedTribe.setDescription(tribeDetails.getDescription());
+            updatedTribe.setMaxMembers(tribeDetails.getMaxMembers());
+            updatedTribe.setPhoto(tribeDetails.getPhoto());
+            updatedTribe.setPrivateTribe(tribeDetails.getPrivateTribe());
+            updatedTribe.setPrivateEvent(tribeDetails.getPrivateEvent());
+            updatedTribe.setCreationTime(tribeDetails.getCreationTime());
+            tribeRepository.save(updatedTribe);
+            return Optional.of(updatedTribe);
+        }
+        return Optional.empty();
+    }
+
+    public boolean deleteTribe(Long id) {
+        if (tribeRepository.existsById(id)) {
+            tribeRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
+
 

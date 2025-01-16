@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -25,8 +26,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public Optional<User> updateUser(Long id, User userDetails) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            User updatedUser = user.get();
+            updatedUser.setName(userDetails.getName());
+            updatedUser.setMail(userDetails.getMail());
+            updatedUser.setPassword(userDetails.getPassword());
+            updatedUser.setProfilePhoto(userDetails.getProfilePhoto());
+            updatedUser.setCreationTime(userDetails.getCreationTime());
+            userRepository.save(updatedUser);
+            return Optional.of(updatedUser);
+        }
+        return Optional.empty();
+    }
+
+    public boolean deleteUser(Long id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
+
 
