@@ -33,7 +33,7 @@ public class UsuarioService {
             updatedUsuarios.setCorreo(usuariosDetails.getCorreo());
             updatedUsuarios.setNombre(usuariosDetails.getNombre());
             updatedUsuarios.setContraseña(usuariosDetails.getContraseña());
-            updatedUsuarios.setFecha_modificacion(usuariosDetails.getFecha_modificacion());
+            updatedUsuarios.setFechaModificacion(usuariosDetails.getFechaModificacion());
             updatedUsuarios.setImagen(usuariosDetails.getImagen());
             usuarioRepository.save(updatedUsuarios);
             return Optional.of(updatedUsuarios);

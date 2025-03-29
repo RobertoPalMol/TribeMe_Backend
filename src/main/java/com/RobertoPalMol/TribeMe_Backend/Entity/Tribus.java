@@ -1,5 +1,6 @@
 package com.RobertoPalMol.TribeMe_Backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ public class Tribus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="tribuid")
+    @Column(name="tribuId")
     private Long tribuId;
 
     @Column(nullable = false)
@@ -21,19 +22,20 @@ public class Tribus {
     private String descripcion;
 
     @ManyToOne
-    @JoinColumn(name="usuarioId", nullable = false)
-    private Usuarios creadorid;
+    @JoinColumn(name="creadorId", nullable = false)
+    @JsonIgnore
+    private Usuarios creador;
 
     @Column(name = "fecha_creacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha_creacion;
+    private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_modificacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha_modificacion;
+    private LocalDateTime fechaModificacion;
 
     @Column
     private String imagen;
 
-    @Column(nullable = false, name = "usuariosmaximos")
+    @Column(nullable = false)
     private int usuariosMaximos;
 
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -45,8 +47,8 @@ public class Tribus {
     @ManyToMany
     @JoinTable(
             name = "tribu_categorias",
-            joinColumns = @JoinColumn(name="tribuid"),
-            inverseJoinColumns = @JoinColumn(name="categoriaid")
+            joinColumns = @JoinColumn(name="tribuId"),
+            inverseJoinColumns = @JoinColumn(name="categoriaId")
     )
     private List<Categorias> categorias;
 
@@ -77,28 +79,28 @@ public class Tribus {
         this.descripcion = descripcion;
     }
 
-    public Usuarios getCreadorid() {
-        return creadorid;
+    public Usuarios getCreador() {
+        return creador;
     }
 
-    public void setCreadorid(Usuarios creadorid) {
-        this.creadorid = creadorid;
+    public void setCreador(Usuarios creador) {
+        this.creador = creador;
     }
 
-    public LocalDateTime getFecha_creacion() {
-        return fecha_creacion;
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
     }
 
-    public void setFecha_creacion(LocalDateTime fecha_creacion) {
-        this.fecha_creacion = fecha_creacion;
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 
-    public LocalDateTime getFecha_modificacion() {
-        return fecha_modificacion;
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
     }
 
-    public void setFecha_modificacion(LocalDateTime fecha_modificacion) {
-        this.fecha_modificacion = fecha_modificacion;
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 
     public String getImagen() {

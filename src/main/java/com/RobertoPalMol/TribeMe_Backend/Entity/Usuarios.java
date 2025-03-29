@@ -1,15 +1,17 @@
 package com.RobertoPalMol.TribeMe_Backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "Usuarios")
 public class Usuarios {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "usuarioid")
+    @Column(name = "usuarioId")
     private Long usuarioId;
 
     @Column(unique = true, nullable = false)
@@ -22,14 +24,17 @@ public class Usuarios {
     private String contraseña;
 
     @Column(name = "fecha_creacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha_creacion;
+    private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_modificacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha_modificacion;
+    private LocalDateTime fechaModificacion;
 
     @Column
     private String imagen;
 
+    @OneToMany(mappedBy = "creador", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Tribus> tribusCreadas;
     // Getters and Setters
 
 
@@ -37,8 +42,8 @@ public class Usuarios {
         return usuarioId;
     }
 
-    public void setUsuarioId(Long idUser) {
-        this.usuarioId = idUser;
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public String getCorreo() {
@@ -65,20 +70,20 @@ public class Usuarios {
         this.contraseña = contraseña;
     }
 
-    public LocalDateTime getFecha_creacion() {
-        return fecha_creacion;
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
     }
 
-    public void setFecha_creacion(LocalDateTime fecha_creacion) {
-        this.fecha_creacion = fecha_creacion;
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 
-    public LocalDateTime getFecha_modificacion() {
-        return fecha_modificacion;
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
     }
 
-    public void setFecha_modificacion(LocalDateTime fecha_modificacion) {
-        this.fecha_modificacion = fecha_modificacion;
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 
     public String getImagen() {
@@ -87,5 +92,13 @@ public class Usuarios {
 
     public void setImagen(String imagen) {
         this.imagen = imagen;
+    }
+
+    public List<Tribus> getTribusCreadas() {
+        return tribusCreadas;
+    }
+
+    public void setTribusCreadas(List<Tribus> tribusCreadas) {
+        this.tribusCreadas = tribusCreadas;
     }
 }
