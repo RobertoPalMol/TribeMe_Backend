@@ -32,9 +32,33 @@ public class Usuarios {
     @Column
     private String imagen;
 
-    @OneToMany(mappedBy = "creador", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tribuCreador", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Tribus> tribusCreadas;
+
+    @OneToMany(mappedBy = "eventoCreador", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Eventos> eventosCreados;
+
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_tribu",
+            joinColumns = @JoinColumn(name="usuario_id"),
+            inverseJoinColumns = @JoinColumn(name="tribu_id")
+    )
+    @JsonIgnore
+    private List<Tribus> tribus;
+
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_evento",
+            joinColumns = @JoinColumn(name="usuario_id"),
+            inverseJoinColumns = @JoinColumn(name="evento_id")
+    )
+    @JsonIgnore
+    private List<Eventos> eventos;
+
+
     // Getters and Setters
 
 
@@ -100,5 +124,29 @@ public class Usuarios {
 
     public void setTribusCreadas(List<Tribus> tribusCreadas) {
         this.tribusCreadas = tribusCreadas;
+    }
+
+    public List<Eventos> getEventosCreados() {
+        return eventosCreados;
+    }
+
+    public void setEventosCreados(List<Eventos> eventosCreados) {
+        this.eventosCreados = eventosCreados;
+    }
+
+    public List<Tribus> getTribus() {
+        return tribus;
+    }
+
+    public void setTribus(List<Tribus> tribus) {
+        this.tribus = tribus;
+    }
+
+    public List<Eventos> getEventos() {
+        return eventos;
+    }
+
+    public void setEventos(List<Eventos> eventos) {
+        this.eventos = eventos;
     }
 }

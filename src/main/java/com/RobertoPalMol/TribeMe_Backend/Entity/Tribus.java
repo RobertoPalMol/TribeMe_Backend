@@ -24,7 +24,7 @@ public class Tribus {
     @ManyToOne
     @JoinColumn(name="creadorId", nullable = false)
     @JsonIgnore
-    private Usuarios creador;
+    private Usuarios tribuCreador;
 
     @Column(name = "fecha_creacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion;
@@ -51,6 +51,10 @@ public class Tribus {
             inverseJoinColumns = @JoinColumn(name="categoriaId")
     )
     private List<Categorias> categorias;
+
+    @ManyToMany(mappedBy = "tribus")
+    @JsonIgnore
+    private List<Usuarios> miembrosTribu;
 
     //getters y setters
 
@@ -79,12 +83,12 @@ public class Tribus {
         this.descripcion = descripcion;
     }
 
-    public Usuarios getCreador() {
-        return creador;
+    public Usuarios getTribuCreador() {
+        return tribuCreador;
     }
 
-    public void setCreador(Usuarios creador) {
-        this.creador = creador;
+    public void setTribuCreador(Usuarios tribuCreador) {
+        this.tribuCreador = tribuCreador;
     }
 
     public LocalDateTime getFechaCreacion() {
@@ -141,5 +145,13 @@ public class Tribus {
 
     public void setCategorias(List<Categorias> categorias) {
         this.categorias = categorias;
+    }
+
+    public List<Usuarios> getMiembrosTribu() {
+        return miembrosTribu;
+    }
+
+    public void setMiembrosTribu(List<Usuarios> miembrosTribu) {
+        this.miembrosTribu = miembrosTribu;
     }
 }
