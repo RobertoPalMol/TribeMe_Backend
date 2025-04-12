@@ -1,0 +1,25 @@
+package com.RobertoPalMol.TribeMe_Backend.DTO;
+
+public class LoginRequest {
+    private String correo;
+    private String contraseña;
+
+    // getters y setters
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getContraseña() {
+        return contraseña;
+    }
+
+    public void setContraseña(String contraseña) {
+        this.contraseña = contraseña;
+    }
+}
+
