@@ -15,7 +15,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private final String SECRET_KEY = "tu_clave_secreta";
+    private final String SECRET_KEY = "mi_clave_super_secreta_de_32_chars!!";
     private final long validityInMilliseconds = 3600000;  // 1 hora de validez
 
     // Método para generar el token
@@ -62,6 +62,6 @@ public class JwtTokenProvider {
     // Método para obtener la autenticación a partir del token
     public Authentication getAuthentication(String token) {
         String username = getUsername(token);
-        return new UsernamePasswordAuthenticationToken(username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
     }
 }

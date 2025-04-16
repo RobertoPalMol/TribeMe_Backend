@@ -1,18 +1,16 @@
 package com.RobertoPalMol.TribeMe_Backend.Controller;
 
 import com.RobertoPalMol.TribeMe_Backend.DTO.LoginRequest;
+import com.RobertoPalMol.TribeMe_Backend.DTO.LoginResponseDTO;
 import com.RobertoPalMol.TribeMe_Backend.DTO.SingnUpRequest;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
+import com.RobertoPalMol.TribeMe_Backend.SecurityConfig.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
@@ -22,24 +20,38 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @PostMapping("/login")
-    public ResponseEntity<?> login (@RequestBody LoginRequest login){
+    public ResponseEntity<?> login(@RequestBody LoginRequest login) {
         Usuarios usuario = usuarioRepository.findByCorreo(login.getCorreo()).orElse(null);
 
-        //busca si el correo existe
         if (usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Correo no encontrado");
         }
-        //comprueba la contraseña
+
         if (!passwordMatches(login.getContraseña(), usuario.getContraseña())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
         }
-        return ResponseEntity.ok("Login exitoso");
+
+        // Generar el token
+        String token = jwtTokenProvider.generateToken(usuario.getCorreo());
+
+        // Crear la respuesta
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setUsuarioId(usuario.getUsuarioId());
+        response.setCorreo(usuario.getCorreo());
+        response.setNombre(usuario.getNombre());
+        response.setImagen(usuario.getImagen());
+        response.setFechaCreacion(usuario.getFechaCreacion());
+        response.setToken(token);
+
+        return ResponseEntity.ok(response);
     }
 
-    private boolean passwordMatches(String rawPassword, String hashedPassword) {
-        return new BCryptPasswordEncoder().matches(rawPassword, hashedPassword);
-    }
 
 
     @PostMapping("/signup")
@@ -67,5 +79,8 @@ public class AuthController {
         return ResponseEntity.ok("Usuario registrado correctamente");
     }
 
+    private boolean passwordMatches(String rawPassword, String hashedPassword) {
+        return passwordEncoder.matches(rawPassword, hashedPassword);
+    }
 
 }
