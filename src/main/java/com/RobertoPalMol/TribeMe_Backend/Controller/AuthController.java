@@ -76,7 +76,7 @@ public class AuthController {
 
         usuarioRepository.save(nuevoUsuario);
 
-        return ResponseEntity.ok("Usuario registrado correctamente");
+        return ResponseEntity.ok(nuevoUsuario);
     }
 
     private boolean passwordMatches(String rawPassword, String hashedPassword) {
