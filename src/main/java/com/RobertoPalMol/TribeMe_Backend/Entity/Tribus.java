@@ -23,7 +23,6 @@ public class Tribus {
 
     @ManyToOne
     @JoinColumn(name="creadorId", nullable = false)
-    @JsonIgnore
     private Usuarios tribuCreador;
 
     @Column(name = "fecha_creacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
