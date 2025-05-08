@@ -76,7 +76,20 @@ public class AuthController {
 
         usuarioRepository.save(nuevoUsuario);
 
-        return ResponseEntity.ok(nuevoUsuario);
+        // Generar el token para el usuario recién creado
+        String token = jwtTokenProvider.generateToken(nuevoUsuario.getCorreo());
+
+        // Crear la respuesta
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setUsuarioId(nuevoUsuario.getUsuarioId());
+        response.setCorreo(nuevoUsuario.getCorreo());
+        response.setNombre(nuevoUsuario.getNombre());
+        response.setImagen(nuevoUsuario.getImagen());
+        response.setFechaCreacion(nuevoUsuario.getFechaCreacion());
+        response.setToken(token);
+
+        // Devolver la respuesta con el token
+        return ResponseEntity.ok(response);
     }
 
     private boolean passwordMatches(String rawPassword, String hashedPassword) {
