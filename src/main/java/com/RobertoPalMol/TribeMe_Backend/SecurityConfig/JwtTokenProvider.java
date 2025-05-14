@@ -1,5 +1,6 @@
 package com.RobertoPalMol.TribeMe_Backend.SecurityConfig;
 
+import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,9 +20,13 @@ public class JwtTokenProvider {
     private final long validityInMilliseconds = 3600000;  // 1 hora de validez
 
     // Método para generar el token
-    public String generateToken(String username) {
+    public String generateToken(Usuarios usuario) {
         Claims claims = Jwts.claims();
-        claims.setSubject(username);
+        claims.setSubject(usuario.getCorreo());
+        claims.put("usuarioId", usuario.getUsuarioId());
+        claims.put("nombre", usuario.getNombre());
+        claims.put("correo", usuario.getCorreo());
+
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 

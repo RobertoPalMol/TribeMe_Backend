@@ -115,6 +115,16 @@ public class TribusController {
         nueva.setTribuCreador(autor);
         nueva.setCategorias(categorias);
 
+        if (nueva.getMiembrosTribu() == null) {
+            nueva.setMiembrosTribu(new java.util.ArrayList<>());
+        }
+        nueva.getMiembrosTribu().add(autor);
+
+        if (autor.getTribus() == null) {
+            autor.setTribus(new java.util.ArrayList<>());
+        }
+        autor.getTribus().add(nueva);
+
         Tribus guardada = tribuRepository.save(nueva);
         log.debug("Tribu creada: id={} por usuarioId={}", guardada.getTribuId(), autor.getUsuarioId());
 

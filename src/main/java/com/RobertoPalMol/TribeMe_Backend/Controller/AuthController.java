@@ -38,7 +38,7 @@ public class AuthController {
         }
 
         // Generar el token
-        String token = jwtTokenProvider.generateToken(usuario.getCorreo());
+        String token = jwtTokenProvider.generateToken(usuario);
 
         // Crear la respuesta
         LoginResponseDTO response = new LoginResponseDTO();
@@ -77,7 +77,7 @@ public class AuthController {
         usuarioRepository.save(nuevoUsuario);
 
         // Generar el token para el usuario recién creado
-        String token = jwtTokenProvider.generateToken(nuevoUsuario.getCorreo());
+        String token = jwtTokenProvider.generateToken(nuevoUsuario);
 
         // Crear la respuesta
         LoginResponseDTO response = new LoginResponseDTO();
