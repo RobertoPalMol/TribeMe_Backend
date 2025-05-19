@@ -11,9 +11,8 @@ public class UsuarioDTO {
     private String nombre;
     private String imagen;
     private LocalDateTime fechaCreacion;
-    private List<Tribus> tribus;
 
-    // Constructor
+    // Constructor completo
     public UsuarioDTO(Long usuarioId, String correo, String nombre, String imagen, LocalDateTime fechaCreacion) {
         this.usuarioId = usuarioId;
         this.correo = correo;
@@ -22,21 +21,45 @@ public class UsuarioDTO {
         this.fechaCreacion = fechaCreacion;
     }
 
-    //getters
-    public Long getUsuarioId() { return usuarioId; }
-    public String getCorreo() { return correo; }
-    public String getNombre() { return nombre; }
-    public String getImagen() { return imagen; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-
-    //getter y setter
-
-    public List<Tribus> getTribus() {
-        return tribus;
+    //getters y setters
+    public Long getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setTribus(List<Tribus> tribus) {
-        this.tribus = tribus;
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }
 

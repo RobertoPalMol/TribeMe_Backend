@@ -1,12 +1,15 @@
 package com.RobertoPalMol.TribeMe_Backend.Controller;
 
 import com.RobertoPalMol.TribeMe_Backend.DTO.TribuDTO;
+import com.RobertoPalMol.TribeMe_Backend.DTO.UsuarioDTO;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Categorias;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Tribus;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import com.RobertoPalMol.TribeMe_Backend.Repository.CategoriaRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.TribuRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
+import com.RobertoPalMol.TribeMe_Backend.Service.TribuService;
+import com.RobertoPalMol.TribeMe_Backend.Service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +34,12 @@ public class TribusController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private TribuService tribuService;
+
+    @Autowired
     private TribuRepository tribuRepository;
 
     @Autowired
@@ -37,45 +48,82 @@ public class TribusController {
     @GetMapping
     public ResponseEntity<List<TribuDTO>> getAllTribus(Authentication authentication) {
         log.debug("getAllTribus called, principal={}", authentication != null ? authentication.getName() : "anonymous");
-        List<TribuDTO> dtos = tribuRepository.findAll().stream()
-                .map(tribu -> new TribuDTO(
-                        tribu.getTribuId(),
-                        tribu.getNombre(),
-                        tribu.getDescripcion(),
-                        tribu.getImagen(),
-                        tribu.getCategorias().stream().map(Categorias::getNombre).collect(Collectors.toList()),
-                        tribu.getUsuariosMaximos(),
-                        tribu.isTribuPrivada(),
-                        tribu.getFechaCreacion(),
-                        tribu.getTribuCreador().getUsuarioId().toString(),
-                        tribu.getTribuCreador().getNombre()
-                ))
-                .collect(Collectors.toList());
-        log.debug("Found {} tribes", dtos.size());
-        return ResponseEntity.ok(dtos);
-    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TribuDTO> getTribuById(@PathVariable Long id, Authentication authentication) {
-        log.debug("getTribuById called for id={}, principal={}", id,
-                authentication != null ? authentication.getName() : "anonymous");
-        return tribuRepository.findById(id)
+        List<TribuDTO> dtos = tribuRepository.findAll().stream()
                 .map(tribu -> {
-                    TribuDTO dto = new TribuDTO(
+                    List<String> nombresCat = tribu.getCategorias().stream()
+                            .map(Categorias::getNombre)
+                            .collect(Collectors.toList());
+
+                    List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
+                            .map(u -> new UsuarioDTO(
+                                    u.getUsuarioId(),
+                                    u.getCorreo(),
+                                    u.getNombre(),
+                                    u.getImagen(),
+                                    u.getFechaCreacion()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return new TribuDTO(
                             tribu.getTribuId(),
                             tribu.getNombre(),
                             tribu.getDescripcion(),
                             tribu.getImagen(),
-                            tribu.getCategorias().stream().map(Categorias::getNombre).collect(Collectors.toList()),
+                            nombresCat,
                             tribu.getUsuariosMaximos(),
                             tribu.isTribuPrivada(),
                             tribu.getFechaCreacion(),
                             tribu.getTribuCreador().getUsuarioId().toString(),
-                            tribu.getTribuCreador().getNombre()
+                            tribu.getTribuCreador().getNombre(),
+                            miembrosDto
                     );
-                    return ResponseEntity.ok(dto);
                 })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TribuDTO> getTribuById(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Optional<Tribus> opt = tribuRepository.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Tribus tribu = opt.get();
+
+        List<String> nombresCat = tribu.getCategorias().stream()
+                .map(Categorias::getNombre)
+                .collect(Collectors.toList());
+
+        List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
+                .map(u -> new UsuarioDTO(
+                        u.getUsuarioId(),
+                        u.getCorreo(),
+                        u.getNombre(),
+                        u.getImagen(),
+                        u.getFechaCreacion()
+                ))
+                .collect(Collectors.toList());
+
+        TribuDTO dto = new TribuDTO(
+                tribu.getTribuId(),
+                tribu.getNombre(),
+                tribu.getDescripcion(),
+                tribu.getImagen(),
+                nombresCat,
+                tribu.getUsuariosMaximos(),
+                tribu.isTribuPrivada(),
+                tribu.getFechaCreacion(),
+                tribu.getTribuCreador().getUsuarioId().toString(),
+                tribu.getTribuCreador().getNombre(),
+                miembrosDto
+        );
+
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
@@ -83,76 +131,106 @@ public class TribusController {
             @RequestBody TribuDTO tribuDTO,
             Authentication authentication) {
 
-        log.debug("createTribu called by principal={} with DTO={} ", authentication.getName(), tribuDTO);
-
-        // Obtener usuario autenticado por correo
         Optional<Usuarios> autorOpt = usuarioRepository.findByCorreo(authentication.getName());
         if (autorOpt.isEmpty()) {
-            log.warn("Usuario no encontrado para principal={}", authentication.getName());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Usuarios autor = autorOpt.get();
 
-        // Validar categorías
-        List<Categorias> categorias = categoriaRepository.findByNombreIn(tribuDTO.getCategorias());
-        if (categorias.size() != tribuDTO.getCategorias().size()) {
-            log.warn("Categorías inválidas: {}", tribuDTO.getCategorias());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        List<Categorias> categoriasEnt = categoriaRepository.findByNombreIn(tribuDTO.getCategorias());
+        if (categoriasEnt.size() != tribuDTO.getCategorias().size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // Construir y guardar nueva tribu
         Tribus nueva = new Tribus();
         nueva.setNombre(tribuDTO.getNombre());
         nueva.setDescripcion(tribuDTO.getDescripcion());
-        nueva.setImagen(
-                (tribuDTO.getImagenUrl() == null || tribuDTO.getImagenUrl().isEmpty())
-                        ? null : tribuDTO.getImagenUrl()
-        );
+        nueva.setImagen(tribuDTO.getImagenUrl());
         nueva.setUsuariosMaximos(tribuDTO.getNumeroMaximoMiembros());
-        nueva.setTribuPrivada(tribuDTO.esPrivada());
+        nueva.setTribuPrivada(tribuDTO.isEsPrivada());
         nueva.setFechaCreacion(LocalDateTime.now());
         nueva.setFechaModificacion(LocalDateTime.now());
         nueva.setTribuCreador(autor);
-        nueva.setCategorias(categorias);
+        nueva.setCategorias(categoriasEnt);
 
-        if (nueva.getMiembrosTribu() == null) {
-            nueva.setMiembrosTribu(new java.util.ArrayList<>());
-        }
+        nueva.setMiembrosTribu(new ArrayList<>());
         nueva.getMiembrosTribu().add(autor);
 
         if (autor.getTribus() == null) {
-            autor.setTribus(new java.util.ArrayList<>());
+            autor.setTribus(new ArrayList<>());
         }
         autor.getTribus().add(nueva);
 
         Tribus guardada = tribuRepository.save(nueva);
-        log.debug("Tribu creada: id={} por usuarioId={}", guardada.getTribuId(), autor.getUsuarioId());
 
-        // Convertir a DTO de respuesta
+        List<String> nombresCat = categoriasEnt.stream()
+                .map(Categorias::getNombre)
+                .collect(Collectors.toList());
+
+        List<UsuarioDTO> miembrosDto = guardada.getMiembrosTribu().stream()
+                .map(u -> new UsuarioDTO(
+                        u.getUsuarioId(),
+                        u.getCorreo(),
+                        u.getNombre(),
+                        u.getImagen(),
+                        u.getFechaCreacion()
+                ))
+                .collect(Collectors.toList());
+
         TribuDTO resp = new TribuDTO(
                 guardada.getTribuId(),
                 guardada.getNombre(),
                 guardada.getDescripcion(),
                 guardada.getImagen(),
-                guardada.getCategorias().stream().map(Categorias::getNombre).collect(Collectors.toList()),
+                nombresCat,
                 guardada.getUsuariosMaximos(),
                 guardada.isTribuPrivada(),
                 guardada.getFechaCreacion(),
                 autor.getUsuarioId().toString(),
-                autor.getNombre()
+                autor.getNombre(),
+                miembrosDto
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTribu(@PathVariable Long id, Authentication authentication) {
-        log.debug("deleteTribu called for id={}, principal={}", id,
-                authentication != null ? authentication.getName() : "anonymous");
-        if (tribuRepository.existsById(id)) {
-            tribuRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+    @PostMapping("/{tribuId}/unirse/{usuarioId}")
+    public ResponseEntity<?> unirseATribu(@PathVariable Long tribuId, @PathVariable Long usuarioId) {
+        try {
+            Usuarios usuario = usuarioService.obtenerPorId(usuarioId);
+            Tribus tribu = tribuService.obtenerPorId(tribuId);
+
+            if (usuario == null || tribu == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o tribu no encontrados");
+            }
+
+            if (tribu.getMiembrosTribu().contains(usuario)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya perteneces a esta tribu");
+            }
+
+            // Añadir relaciones en ambos sentidos
+            tribu.getMiembrosTribu().add(usuario);
+            usuario.getTribus().add(tribu);
+
+            usuarioService.guardar(usuario);
+            tribuService.guardar(tribu);
+
+            return ResponseEntity.ok("Te has unido a la tribu correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al unirse a la tribu: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTribu(
+            @PathVariable Long id,
+            Authentication authentication) {
+        if (!tribuRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        tribuRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

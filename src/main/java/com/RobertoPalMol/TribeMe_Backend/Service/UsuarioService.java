@@ -20,6 +20,15 @@ public class UsuarioService {
     public Optional<Usuarios> getUserByCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo);
     }
+
+    public Usuarios obtenerPorId(Long id) {
+        return usuarioRepository.findById(id).orElse(null);
+    }
+
+    public Usuarios guardar(Usuarios usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
 }
 
 
