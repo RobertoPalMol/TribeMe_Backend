@@ -227,6 +227,81 @@ public class TribusController {
     }
 
 
+    @DeleteMapping("/{tribuId}/salir/{usuarioId}")
+    public ResponseEntity<?> salirDeTribu(@PathVariable Long tribuId, @PathVariable Long usuarioId) {
+        try {
+            Usuarios usuario = usuarioService.obtenerPorId(usuarioId);
+            Tribus tribu = tribuService.obtenerPorId(tribuId);
+
+            if (usuario == null || tribu == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o tribu no encontrados");
+            }
+
+            if (!tribu.getMiembrosTribu().contains(usuario)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("No perteneces a esta tribu");
+            }
+
+            // Eliminar relaciones en ambos sentidos
+            tribu.getMiembrosTribu().remove(usuario);
+            usuario.getTribus().remove(tribu);
+
+            usuarioService.guardar(usuario);
+            tribuService.guardar(tribu);
+
+            return ResponseEntity.ok("Has salido de la tribu correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al salir de la tribu: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/filtrar")
+    public ResponseEntity<List<TribuDTO>> buscarTribus(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) List<String> categorias) {
+
+        List<Tribus> tribusFiltradas = tribuRepository.buscarTribusFiltradas(nombre, ubicacion, categorias);
+
+        List<TribuDTO> dtos = tribusFiltradas.stream()
+                .map(tribu -> {
+                    List<String> nombresCat = tribu.getCategorias().stream()
+                            .map(Categorias::getNombre)
+                            .collect(Collectors.toList());
+
+                    List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
+                            .map(u -> new UsuarioDTO(
+                                    u.getUsuarioId(),
+                                    u.getCorreo(),
+                                    u.getNombre(),
+                                    u.getImagen(),
+                                    u.getFechaCreacion()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return new TribuDTO(
+                            tribu.getTribuId(),
+                            tribu.getNombre(),
+                            tribu.getDescripcion(),
+                            tribu.getImagen(),
+                            nombresCat,
+                            tribu.getUsuariosMaximos(),
+                            tribu.isTribuPrivada(),
+                            tribu.getFechaCreacion(),
+                            tribu.getTribuCreador().getUsuarioId().toString(),
+                            tribu.getTribuCreador().getNombre(),
+                            miembrosDto,
+                            tribu.getUbicacion()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTribu(
             @PathVariable Long id,
