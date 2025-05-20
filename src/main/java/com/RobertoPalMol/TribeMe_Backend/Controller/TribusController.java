@@ -76,7 +76,8 @@ public class TribusController {
                             tribu.getFechaCreacion(),
                             tribu.getTribuCreador().getUsuarioId().toString(),
                             tribu.getTribuCreador().getNombre(),
-                            miembrosDto
+                            miembrosDto,
+                            tribu.getUbicacion()
                     );
                 })
                 .collect(Collectors.toList());
@@ -120,7 +121,8 @@ public class TribusController {
                 tribu.getFechaCreacion(),
                 tribu.getTribuCreador().getUsuarioId().toString(),
                 tribu.getTribuCreador().getNombre(),
-                miembrosDto
+                miembrosDto,
+                tribu.getUbicacion()
         );
 
         return ResponseEntity.ok(dto);
@@ -152,7 +154,7 @@ public class TribusController {
         nueva.setFechaModificacion(LocalDateTime.now());
         nueva.setTribuCreador(autor);
         nueva.setCategorias(categoriasEnt);
-
+        nueva.setUbicacion(tribuDTO.getUbicacion());
         nueva.setMiembrosTribu(new ArrayList<>());
         nueva.getMiembrosTribu().add(autor);
 
@@ -188,7 +190,9 @@ public class TribusController {
                 guardada.getFechaCreacion(),
                 autor.getUsuarioId().toString(),
                 autor.getNombre(),
-                miembrosDto
+                miembrosDto,
+                guardada.getUbicacion()
+
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);

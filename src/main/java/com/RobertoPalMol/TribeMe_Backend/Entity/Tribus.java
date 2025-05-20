@@ -55,6 +55,9 @@ public class Tribus {
     @JsonIgnore
     private List<Usuarios> miembrosTribu;
 
+    @Column
+    private String ubicacion;
+
     //getters y setters
 
 
@@ -152,5 +155,13 @@ public class Tribus {
 
     public void setMiembrosTribu(List<Usuarios> miembrosTribu) {
         this.miembrosTribu = miembrosTribu;
+    }
+
+    public String getUbicacion() {
+        return ubicacion;
+    }
+
+    public void setUbicacion(String ubicacion) {
+        this.ubicacion = ubicacion;
     }
 }

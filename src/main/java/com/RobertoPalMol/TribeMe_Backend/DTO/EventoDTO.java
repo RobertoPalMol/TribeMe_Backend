@@ -27,7 +27,6 @@ public class EventoDTO {
 
     //getter y setters
 
-
     public Long getEventoId() {
         return eventoId;
     }
