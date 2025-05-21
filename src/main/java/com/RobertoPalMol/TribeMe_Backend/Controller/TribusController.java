@@ -1,6 +1,7 @@
 package com.RobertoPalMol.TribeMe_Backend.Controller;
 
 import com.RobertoPalMol.TribeMe_Backend.DTO.TribuDTO;
+import com.RobertoPalMol.TribeMe_Backend.DTO.UpdateTribuDTO;
 import com.RobertoPalMol.TribeMe_Backend.DTO.UsuarioDTO;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Categorias;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Tribus;
@@ -16,8 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -300,16 +302,94 @@ public class TribusController {
         return ResponseEntity.ok(dtos);
     }
 
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTribu(
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTribu(
             @PathVariable Long id,
-            Authentication authentication) {
-        if (!tribuRepository.existsById(id)) {
+            @RequestBody UpdateTribuDTO updatedTribu,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Usuarios usuario = usuarioOpt.get();
+
+        Optional<Tribus> opt = tribuRepository.findById(id);
+        if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        tribuRepository.deleteById(id);
+
+        Tribus tribu = opt.get();
+
+        if (!tribu.getTribuCreador().getUsuarioId().equals(usuario.getUsuarioId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para editar esta tribu");
+        }
+
+        List<Categorias> categorias = categoriaRepository.findByNombreIn(updatedTribu.getCategorias());
+        if (categorias.size() != updatedTribu.getCategorias().size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Una o más categorías no son válidas");
+        }
+
+        tribu.setNombre(updatedTribu.getNombre());
+        tribu.setDescripcion(updatedTribu.getDescripcion());
+        tribu.setImagen(updatedTribu.getImagenUrl());
+        tribu.setUsuariosMaximos(updatedTribu.getNumeroMaximoMiembros());
+        tribu.setTribuPrivada(updatedTribu.isEsPrivada());
+        tribu.setUbicacion(updatedTribu.getUbicacion());
+        tribu.setCategorias(categorias);
+        tribu.setFechaModificacion(LocalDateTime.now());
+
+        tribuRepository.save(tribu);
+
+        return ResponseEntity.ok("Tribu actualizada correctamente");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTribu(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Tribus> tribuOpt = tribuRepository.findById(id);
+        if (tribuOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Tribus tribu = tribuOpt.get();
+        Usuarios usuario = usuarioOpt.get();
+
+        if (!tribu.getTribuCreador().getUsuarioId().equals(usuario.getUsuarioId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para eliminar esta tribu");
+        }
+
+        // Eliminar la tribu de la lista de tribus de cada usuario miembro
+        for (Usuarios miembro : tribu.getMiembrosTribu()) {
+            miembro.getTribus().remove(tribu);
+            usuarioRepository.save(miembro);
+        }
+
+        // Limpiar la lista de miembros de la tribu
+        tribu.getMiembrosTribu().clear();
+        tribuRepository.save(tribu);
+
+        // Eliminar la tribu
+        tribuRepository.delete(tribu);
+
         return ResponseEntity.noContent().build();
     }
+
+
 }
