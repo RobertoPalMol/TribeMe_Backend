@@ -409,23 +409,13 @@ public class TribusController {
     }
 
 
-    @PostMapping("/image")
+    @PostMapping("/imagen")
     public ResponseEntity<?> uploadImage(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
             @RequestParam("image") MultipartFile image,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        // Validar token manualmente si quieres, por ejemplo:
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
-        }
-
-        String token = authorizationHeader.substring(7);
-
-        // Aquí podrías validar el token con tu JwtTokenProvider si quieres
-        boolean validToken = true; // Implementa esta lógica según tu JwtTokenProvider
-        if (!validToken) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o expirado");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
 
         try {
@@ -437,6 +427,7 @@ public class TribusController {
                     .body("Error al subir la imagen: " + e.getMessage());
         }
     }
+
 
 
 }
