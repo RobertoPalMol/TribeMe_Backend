@@ -1,5 +1,6 @@
 package com.RobertoPalMol.TribeMe_Backend.Controller;
 
+import com.RobertoPalMol.TribeMe_Backend.DTO.ImageUploadResponse;
 import com.RobertoPalMol.TribeMe_Backend.DTO.TribuDTO;
 import com.RobertoPalMol.TribeMe_Backend.DTO.UpdateTribuDTO;
 import com.RobertoPalMol.TribeMe_Backend.DTO.UsuarioDTO;
@@ -17,14 +18,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.nio.file.Paths;
+
 
 @RestController
 @RequestMapping("/api/tribus")
@@ -389,6 +396,19 @@ public class TribusController {
         tribuRepository.delete(tribu);
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
+        String folder = "/TribeMe/tribus/imagenes/";
+        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path path = Paths.get(folder + filename);
+        Files.write(path, file.getBytes());
+
+        // Devuelve la URL relativa o absoluta para accederla después
+        String imageUrl = "http://56.228.33.92/TribeMe/tribus/imagenes/" + filename;
+        return ResponseEntity.ok(new ImageUploadResponse(imageUrl));
     }
 
 
