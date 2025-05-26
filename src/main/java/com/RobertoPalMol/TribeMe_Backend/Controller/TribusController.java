@@ -428,6 +428,31 @@ public class TribusController {
         }
     }
 
+    @GetMapping("/imagenes/{filename:.+}")
+    public ResponseEntity<?> getImage(
+            @PathVariable String filename,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        try {
+            Path imagePath = Paths.get("uploads").resolve(filename);
+            if (!Files.exists(imagePath)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
+            }
+
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.CONTENT_TYPE, Files.probeContentType(imagePath));
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al leer la imagen: " + e.getMessage());
+        }
+    }
 
 
 }
