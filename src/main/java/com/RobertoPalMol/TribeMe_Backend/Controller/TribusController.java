@@ -10,11 +10,14 @@ import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import com.RobertoPalMol.TribeMe_Backend.Repository.CategoriaRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.TribuRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
+import com.RobertoPalMol.TribeMe_Backend.Service.ImageService;
 import com.RobertoPalMol.TribeMe_Backend.Service.TribuService;
 import com.RobertoPalMol.TribeMe_Backend.Service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,6 +42,8 @@ public class TribusController {
 
     private static final Logger log = LoggerFactory.getLogger(TribusController.class);
 
+    private final ImageService imageService;
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -53,6 +58,11 @@ public class TribusController {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    public TribusController(ImageService imageService) {
+        this.imageService = imageService;
+    }
 
     @GetMapping
     public ResponseEntity<List<TribuDTO>> getAllTribus(Authentication authentication) {
@@ -399,16 +409,33 @@ public class TribusController {
     }
 
 
-    @PostMapping("/upload-image")
-    public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
-        String folder = "/TribeMe/tribus/imagenes/";
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path path = Paths.get(folder + filename);
-        Files.write(path, file.getBytes());
+    @PostMapping("/image")
+    public ResponseEntity<?> uploadImage(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
+            @RequestParam("image") MultipartFile image,
+            HttpServletRequest request) {
 
-        // Devuelve la URL relativa o absoluta para accederla después
-        String imageUrl = "http://56.228.33.92/TribeMe/tribus/imagenes/" + filename;
-        return ResponseEntity.ok(new ImageUploadResponse(imageUrl));
+        // Validar token manualmente si quieres, por ejemplo:
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        // Aquí podrías validar el token con tu JwtTokenProvider si quieres
+        boolean validToken = true; // Implementa esta lógica según tu JwtTokenProvider
+        if (!validToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o expirado");
+        }
+
+        try {
+            String imageUrl = imageService.storeImage(image);
+            ImageUploadResponse response = new ImageUploadResponse(imageUrl);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir la imagen: " + e.getMessage());
+        }
     }
 
 
