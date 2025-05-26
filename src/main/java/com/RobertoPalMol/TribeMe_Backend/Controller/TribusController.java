@@ -438,7 +438,7 @@ public class TribusController {
         }
 
         try {
-            Path imagePath = Paths.get("uploads").resolve(filename);
+            Path imagePath = Paths.get("TribeMe/tribus/imagenes").resolve(filename);
             if (!Files.exists(imagePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
             }
