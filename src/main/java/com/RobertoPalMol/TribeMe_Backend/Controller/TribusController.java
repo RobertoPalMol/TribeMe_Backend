@@ -430,17 +430,11 @@ public class TribusController {
 
     @GetMapping("/imagenes/{filename:.+}")
     public ResponseEntity<?> getImage(
-            @PathVariable String filename,
-            Authentication authentication) {
+            @PathVariable String filename) {
 
 
         System.out.println("Petición imagen: " + filename);
-        System.out.println("Usuario autenticado? " + (authentication != null && authentication.isAuthenticated()));
 
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
-        }
 
         try {
             Path imagePath = Paths.get("TribeMe/tribus/imagenes").resolve(filename);
