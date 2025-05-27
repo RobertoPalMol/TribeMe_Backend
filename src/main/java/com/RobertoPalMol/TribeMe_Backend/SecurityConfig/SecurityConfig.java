@@ -15,7 +15,6 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()  // Permitir endpoints de login y signup
-                        .requestMatchers("/TribeMe/tribus/imagenes/**").permitAll()
                         .anyRequest().authenticated()  // El resto requiere autenticación
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())    // Desactivar autenticación básica

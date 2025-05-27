@@ -433,6 +433,11 @@ public class TribusController {
             @PathVariable String filename,
             Authentication authentication) {
 
+
+        System.out.println("Petición imagen: " + filename);
+        System.out.println("Usuario autenticado? " + (authentication != null && authentication.isAuthenticated()));
+
+
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
