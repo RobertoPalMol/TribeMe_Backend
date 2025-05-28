@@ -443,6 +443,7 @@ public class TribusController {
         try {
             Path imagePath = Paths.get("/app/TribeMe/tribus/imagenes").resolve(filename);
             if (!Files.exists(imagePath)) {
+                System.out.println("no se encuentra la carpeta lokete \n\n\n\nwoooooww\n\n\n\n");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
             }
 
