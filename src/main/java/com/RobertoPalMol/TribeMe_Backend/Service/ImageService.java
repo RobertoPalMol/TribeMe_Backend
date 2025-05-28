@@ -36,8 +36,6 @@ public class ImageService {
         // Guardar el archivo
         file.transferTo(destinationFile);
 
-        // Retornar la URL o ruta para acceder a la imagen (depende de tu servidor)
-        // Por ejemplo: si sirves los archivos estáticos desde /uploads/images
-        return "TribeMe/tribus/imagenes/" + originalFilename;
+        return "/api/TribeMe/tribus/imagenes/" + originalFilename;
     }
 }
