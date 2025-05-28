@@ -18,12 +18,13 @@ public class TribuDTO {
     private List<UsuarioDTO> miembros;
 
     private String ubicacion;
+    private Boolean crearEventos;
 
 
     // Constructor
     public TribuDTO(Long tribuId, String nombre, String descripcion, String imagenUrl, List<String> categorias,
                     int numeroMaximoMiembros, boolean esPrivada, LocalDateTime fechaCreacion,
-                    String autorId, String autorNombre,  List<UsuarioDTO> miembros, String ubicacion) {
+                    String autorId, String autorNombre,  List<UsuarioDTO> miembros, String ubicacion, Boolean crearEventos) {
         this.tribuId = tribuId;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -36,6 +37,7 @@ public class TribuDTO {
         this.autorNombre = autorNombre;
         this.miembros = miembros;
         this.ubicacion = ubicacion;
+        this.crearEventos = crearEventos;
     }
 
     //getters y setters
@@ -135,5 +137,13 @@ public class TribuDTO {
 
     public void setUbicacion(String ubicacion) {
         this.ubicacion = ubicacion;
+    }
+
+    public Boolean getCrearEventos() {
+        return crearEventos;
+    }
+
+    public void setCrearEventos(Boolean crearEventos) {
+        this.crearEventos = crearEventos;
     }
 }

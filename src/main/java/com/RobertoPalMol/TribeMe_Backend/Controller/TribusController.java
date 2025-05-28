@@ -13,7 +13,6 @@ import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
 import com.RobertoPalMol.TribeMe_Backend.Service.ImageService;
 import com.RobertoPalMol.TribeMe_Backend.Service.TribuService;
 import com.RobertoPalMol.TribeMe_Backend.Service.UsuarioService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +95,8 @@ public class TribusController {
                             tribu.getTribuCreador().getUsuarioId().toString(),
                             tribu.getTribuCreador().getNombre(),
                             miembrosDto,
-                            tribu.getUbicacion()
+                            tribu.getUbicacion(),
+                            tribu.isCrearEventos()
                     );
                 })
                 .collect(Collectors.toList());
@@ -141,7 +141,8 @@ public class TribusController {
                 tribu.getTribuCreador().getUsuarioId().toString(),
                 tribu.getTribuCreador().getNombre(),
                 miembrosDto,
-                tribu.getUbicacion()
+                tribu.getUbicacion(),
+                tribu.isCrearEventos()
         );
 
         return ResponseEntity.ok(dto);
@@ -176,6 +177,7 @@ public class TribusController {
         nueva.setUbicacion(tribuDTO.getUbicacion());
         nueva.setMiembrosTribu(new ArrayList<>());
         nueva.getMiembrosTribu().add(autor);
+        nueva.setCrearEventos(tribuDTO.getCrearEventos());
 
         if (autor.getTribus() == null) {
             autor.setTribus(new ArrayList<>());
@@ -210,7 +212,8 @@ public class TribusController {
                 autor.getUsuarioId().toString(),
                 autor.getNombre(),
                 miembrosDto,
-                guardada.getUbicacion()
+                guardada.getUbicacion(),
+                guardada.isCrearEventos()
 
         );
 
@@ -311,7 +314,8 @@ public class TribusController {
                             tribu.getTribuCreador().getUsuarioId().toString(),
                             tribu.getTribuCreador().getNombre(),
                             miembrosDto,
-                            tribu.getUbicacion()
+                            tribu.getUbicacion(),
+                            tribu.isCrearEventos()
                     );
                 })
                 .collect(Collectors.toList());
@@ -452,6 +456,58 @@ public class TribusController {
                     .body("Error al leer la imagen: " + e.getMessage());
         }
     }
+
+    @GetMapping("/mis-tribus")
+    public ResponseEntity<?> getMisTribus(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        Usuarios usuario = usuarioOpt.get();
+        List<Tribus> misTribus = usuario.getTribus(); // Tribu donde el usuario es miembro
+
+        List<TribuDTO> dtos = misTribus.stream()
+                .map(tribu -> {
+                    List<String> nombresCat = tribu.getCategorias().stream()
+                            .map(Categorias::getNombre)
+                            .collect(Collectors.toList());
+
+                    List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
+                            .map(u -> new UsuarioDTO(
+                                    u.getUsuarioId(),
+                                    u.getCorreo(),
+                                    u.getNombre(),
+                                    u.getImagen(),
+                                    u.getFechaCreacion()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return new TribuDTO(
+                            tribu.getTribuId(),
+                            tribu.getNombre(),
+                            tribu.getDescripcion(),
+                            tribu.getImagen(),
+                            nombresCat,
+                            tribu.getUsuariosMaximos(),
+                            tribu.isTribuPrivada(),
+                            tribu.getFechaCreacion(),
+                            tribu.getTribuCreador().getUsuarioId().toString(),
+                            tribu.getTribuCreador().getNombre(),
+                            miembrosDto,
+                            tribu.getUbicacion(),
+                            tribu.isCrearEventos()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
 
 
 }

@@ -37,7 +37,7 @@ public class Tribus {
     @Column(nullable = false)
     private int usuariosMaximos;
 
-    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean tribuPrivada;
 
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -57,6 +57,10 @@ public class Tribus {
 
     @Column
     private String ubicacion;
+
+    @OneToMany(mappedBy = "tribu")
+    private List<Eventos> eventos;
+
 
     //getters y setters
 
@@ -163,5 +167,13 @@ public class Tribus {
 
     public void setUbicacion(String ubicacion) {
         this.ubicacion = ubicacion;
+    }
+
+    public List<Eventos> getEventos() {
+        return eventos;
+    }
+
+    public void setEventos(List<Eventos> eventos) {
+        this.eventos = eventos;
     }
 }

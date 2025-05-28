@@ -30,11 +30,11 @@ public class AuthController {
         Usuarios usuario = usuarioRepository.findByCorreo(login.getCorreo()).orElse(null);
 
         if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Correo no encontrado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Correo o contraseña incorrectos");
         }
 
         if (!passwordMatches(login.getContraseña(), usuario.getContraseña())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Correo o contraseña incorrectos");
         }
 
         // Generar el token

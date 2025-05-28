@@ -43,9 +43,12 @@ public class Eventos {
     @JsonIgnore
     private List<Usuarios> miembrosEvento;
 
+    @ManyToOne
+    @JoinColumn(name="tribuId", nullable = false)
+    @JsonIgnore
+    private Tribus tribu;
 
     //Getter and setters
-
 
     public Long getEventoId() {
         return eventoId;
@@ -117,5 +120,12 @@ public class Eventos {
 
     public void setMiembrosEvento(List<Usuarios> miembrosEvento) {
         this.miembrosEvento = miembrosEvento;
+    }
+    public Tribus getTribu() {
+        return tribu;
+    }
+
+    public void setTribu(Tribus tribu) {
+        this.tribu = tribu;
     }
 }

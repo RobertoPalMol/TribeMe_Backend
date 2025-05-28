@@ -12,9 +12,10 @@ public class EventoDTO {
     private LocalDateTime fechaCreacion;
     private String autorId;
     private String autorNombre;
+    private Long tribuId;
 
     public EventoDTO(Long eventoId, String nombre, String descripcion, LocalTime hora, String lugar,
-                     LocalDateTime fechaCreacion, String autorId, String autorNombre) {
+                     LocalDateTime fechaCreacion, String autorId, String autorNombre, Long tribuId) {
         this.eventoId = eventoId;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -23,6 +24,7 @@ public class EventoDTO {
         this.fechaCreacion = fechaCreacion;
         this.autorId = autorId;
         this.autorNombre = autorNombre;
+        this.tribuId = tribuId;
     }
 
     //getter y setters
@@ -89,5 +91,13 @@ public class EventoDTO {
 
     public void setAutorNombre(String autorNombre) {
         this.autorNombre = autorNombre;
+    }
+
+    public Long getTribuId() {
+        return tribuId;
+    }
+
+    public void setTribuId(Long tribuId) {
+        this.tribuId = tribuId;
     }
 }
