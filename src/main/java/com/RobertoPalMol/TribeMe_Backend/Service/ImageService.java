@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 @Service
 public class ImageService {
 
-    private final Path storageFolder = Paths.get("/app/TribeMe/tribus/imagenes/");
+    private final Path storageFolder = Paths.get("TribeMe_Backend/TribeMe/tribus/imagenes/");
 
     public ImageService() throws IOException {
         // Crear carpeta si no existe
@@ -36,6 +36,6 @@ public class ImageService {
         // Guardar el archivo
         file.transferTo(destinationFile);
 
-        return "/api/TribeMe/tribus/imagenes/" + originalFilename;
+        return "TribeMe_Backend/TribeMe/tribus/imagenes/" + originalFilename;
     }
 }

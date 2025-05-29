@@ -418,6 +418,8 @@ public class TribusController {
             @RequestParam("image") MultipartFile image,
             Authentication authentication) {
 
+        System.out.println("Autenticación recibida: " + authentication);
+
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
@@ -436,14 +438,9 @@ public class TribusController {
     public ResponseEntity<?> getImage(
             @PathVariable String filename) {
 
-
-        System.out.println("Petición imagen: " + filename);
-
-
         try {
-            Path imagePath = Paths.get("/app/TribeMe/tribus/imagenes").resolve(filename);
+            Path imagePath = Paths.get("TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename);
             if (!Files.exists(imagePath)) {
-                System.out.println("no se encuentra la carpeta lokete \n\n\n\nwoooooww\n\n\n\n");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
             }
 
