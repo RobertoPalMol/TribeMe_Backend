@@ -439,7 +439,7 @@ public class TribusController {
             @PathVariable String filename) {
 
         try {
-            Path imagePath = Paths.get("TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename);
+            Path imagePath = Paths.get("/TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename);
             if (!Files.exists(imagePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
             }
