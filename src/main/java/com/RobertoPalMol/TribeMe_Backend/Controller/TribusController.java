@@ -435,11 +435,10 @@ public class TribusController {
     }
 
     @GetMapping("/imagenes/{filename:.+}")
-    public ResponseEntity<?> getImage(
-            @PathVariable String filename) {
-
+    public ResponseEntity<?> getImage(@PathVariable String filename) {
         try {
-            Path imagePath = Paths.get("/TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename);
+            Path imagePath = Paths.get("TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename).normalize().toAbsolutePath();
+
             if (!Files.exists(imagePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
             }
@@ -454,6 +453,7 @@ public class TribusController {
                     .body("Error al leer la imagen: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/mis-tribus")
     public ResponseEntity<?> getMisTribus(Authentication authentication) {

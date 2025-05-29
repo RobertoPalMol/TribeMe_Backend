@@ -21,21 +21,21 @@ public class ImageService {
     }
 
     public String storeImage(MultipartFile file) throws IOException {
-        // Validar que el archivo no esté vacío
         if (file.isEmpty()) {
             throw new IOException("El archivo está vacío");
         }
 
-        // Obtener nombre original (puedes crear uno único si quieres evitar colisiones)
         String originalFilename = file.getOriginalFilename();
 
-        // Ruta destino
+        // Ruta física en el servidor / contenedor donde se guardan las imágenes
         Path destinationFile = this.storageFolder.resolve(Paths.get(originalFilename))
                 .normalize().toAbsolutePath();
 
-        // Guardar el archivo
+        // Guardar el archivo físicamente
         file.transferTo(destinationFile);
 
-        return "/TribeMe_Backend/TribeMe/tribus/imagenes/" + originalFilename;
+        // Devolver la URL pública que puede usar el cliente para acceder a la imagen
+        return "/imagenes/" + originalFilename;
     }
+
 }
