@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/TribeMe/tribus/imagenes/**")
-                .addResourceLocations("file:/TribeMe/tribus/imagenes/");
+        registry.addResourceHandler("/TribeMe_Backend/TribeMe/tribus/imagenes/**")
+                .addResourceLocations("file:/TribeMe_Backend/TribeMe/tribus/imagenes/");
     }
 }

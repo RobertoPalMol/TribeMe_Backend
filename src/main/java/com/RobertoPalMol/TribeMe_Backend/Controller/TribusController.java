@@ -506,7 +506,4 @@ public class TribusController {
 
         return ResponseEntity.ok(dtos);
     }
-
-
-
 }
