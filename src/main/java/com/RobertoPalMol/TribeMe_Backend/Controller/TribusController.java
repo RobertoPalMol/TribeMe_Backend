@@ -437,7 +437,8 @@ public class TribusController {
     @GetMapping("/imagenes/{filename:.+}")
     public ResponseEntity<?> getImage(@PathVariable String filename) {
         try {
-            Path imagePath = Paths.get("TribeMe_Backend/TribeMe/tribus/imagenes").resolve(filename).normalize().toAbsolutePath();
+            // Obtener path físico del archivo desde el servicio (exponer método getStorageFolder)
+            Path imagePath = imageService.getStorageFolder().resolve(filename).normalize().toAbsolutePath();
 
             if (!Files.exists(imagePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
