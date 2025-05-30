@@ -7,6 +7,8 @@ import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import com.RobertoPalMol.TribeMe_Backend.Repository.EventosRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.TribuRepository;
 import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
+import com.RobertoPalMol.TribeMe_Backend.Service.EventoService;
+import com.RobertoPalMol.TribeMe_Backend.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,14 @@ public class EventosController {
 
     @Autowired
     private TribuRepository tribuRepository;
+
+    private final EventoService eventoService;
+    private final UsuarioService usuarioService;
+
+    public EventosController(EventoService eventoService, UsuarioService usuarioService) {
+        this.eventoService = eventoService;
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping
     public ResponseEntity<List<EventoDTO>> getAllEventos(Authentication authentication) {
@@ -158,7 +168,7 @@ public class EventosController {
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        System.out.println("✅ Entrando en getEventosByTribu");
+        System.out.println("Entrando en getEventosByTribu");
         List<Eventos> eventos = eventoRepository.findByTribu_TribuId(tribuId);
         List<EventoDTO> dtos = eventos.stream()
                 .map(e -> new EventoDTO(
@@ -174,6 +184,62 @@ public class EventosController {
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+
+    @PostMapping("/{eventoId}/unirse/{usuarioId}")
+    public ResponseEntity<?> unirseAEvento(@PathVariable Long eventoId, @PathVariable Long usuarioId) {
+        try {
+            Usuarios usuario = usuarioService.obtenerPorId(usuarioId);
+            Eventos evento = eventoService.obtenerPorId(eventoId);
+
+            if (usuario == null || evento == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o evento no encontrados");
+            }
+
+            if (evento.getMiembrosEvento().contains(usuario)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya estás inscrito en este evento");
+            }
+
+            // Añadir relaciones en ambos sentidos
+            evento.getMiembrosEvento().add(usuario);
+            usuario.getEventos().add(evento);
+
+            usuarioService.guardar(usuario);
+            eventoService.guardar(evento);
+
+            return ResponseEntity.ok("Te has unido al evento correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al unirse al evento: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{eventoId}/salir/{usuarioId}")
+    public ResponseEntity<?> salirDeEvento(@PathVariable Long eventoId, @PathVariable Long usuarioId) {
+        try {
+            Usuarios usuario = usuarioService.obtenerPorId(usuarioId);
+            Eventos evento = eventoService.obtenerPorId(eventoId);
+
+            if (usuario == null || evento == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario o evento no encontrados");
+            }
+
+            if (!evento.getMiembrosEvento().contains(usuario)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("No estás inscrito en este evento");
+            }
+
+            // Eliminar relaciones en ambos sentidos
+            evento.getMiembrosEvento().remove(usuario);
+            usuario.getEventos().remove(evento);
+
+            usuarioService.guardar(usuario);
+            eventoService.guardar(evento);
+
+            return ResponseEntity.ok("Has salido del evento correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al salir del evento: " + e.getMessage());
+        }
     }
 
 }
