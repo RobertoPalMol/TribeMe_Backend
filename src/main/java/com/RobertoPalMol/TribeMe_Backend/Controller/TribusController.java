@@ -456,7 +456,7 @@ public class TribusController {
     }
 
 
-    @GetMapping("/mis-tribus")
+    @GetMapping("/mistribus")
     public ResponseEntity<?> getMisTribus(Authentication authentication) {
         System.out.println("🔍 [getMisTribus] Authentication: " + authentication);
 
