@@ -1,10 +1,12 @@
 package com.RobertoPalMol.TribeMe_Backend.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,9 +41,13 @@ public class Eventos {
     @JsonIgnore
     private Usuarios eventoCreador;
 
-    @ManyToMany(mappedBy = "eventos")
-    @JsonIgnore
-    private List<Usuarios> miembrosEvento;
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_evento",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
+    private List<Usuarios> miembrosEvento = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name="tribuId", nullable = false)

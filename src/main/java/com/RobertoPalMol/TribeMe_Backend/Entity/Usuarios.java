@@ -1,8 +1,10 @@
 package com.RobertoPalMol.TribeMe_Backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -52,11 +54,11 @@ public class Usuarios {
     @ManyToMany
     @JoinTable(
             name = "usuario_evento",
-            joinColumns = @JoinColumn(name="usuario_id"),
-            inverseJoinColumns = @JoinColumn(name="evento_id")
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "evento_id")
     )
-    @JsonIgnore
     private List<Eventos> eventos;
+
 
 
     // Getters and Setters

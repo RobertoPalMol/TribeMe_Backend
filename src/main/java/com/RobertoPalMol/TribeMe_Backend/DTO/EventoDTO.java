@@ -1,7 +1,10 @@
 package com.RobertoPalMol.TribeMe_Backend.DTO;
 
+import com.RobertoPalMol.TribeMe_Backend.Entity.Tribus;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public class EventoDTO {
     private Long eventoId;
@@ -10,21 +13,19 @@ public class EventoDTO {
     private LocalTime hora;
     private String lugar;
     private LocalDateTime fechaCreacion;
-    private String autorId;
-    private String autorNombre;
     private Long tribuId;
+    private List<UsuarioDTO> miembrosEvento;
 
-    public EventoDTO(Long eventoId, String nombre, String descripcion, LocalTime hora, String lugar,
-                     LocalDateTime fechaCreacion, String autorId, String autorNombre, Long tribuId) {
+
+
+    public EventoDTO(Long eventoId, String nombre, String descripcion, LocalTime hora, String lugar, Long tribuId, List<UsuarioDTO> miembrosEvento) {
         this.eventoId = eventoId;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.hora = hora;
         this.lugar = lugar;
-        this.fechaCreacion = fechaCreacion;
-        this.autorId = autorId;
-        this.autorNombre = autorNombre;
         this.tribuId = tribuId;
+        this.miembrosEvento = miembrosEvento;
     }
 
     //getter y setters
@@ -77,27 +78,19 @@ public class EventoDTO {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public String getAutorId() {
-        return autorId;
-    }
-
-    public void setAutorId(String autorId) {
-        this.autorId = autorId;
-    }
-
-    public String getAutorNombre() {
-        return autorNombre;
-    }
-
-    public void setAutorNombre(String autorNombre) {
-        this.autorNombre = autorNombre;
-    }
-
     public Long getTribuId() {
         return tribuId;
     }
 
     public void setTribuId(Long tribuId) {
         this.tribuId = tribuId;
+    }
+
+    public List<UsuarioDTO> getMiembrosEvento() {
+        return miembrosEvento;
+    }
+
+    public void setMiembrosEvento(List<UsuarioDTO> miembrosEvento) {
+        this.miembrosEvento = miembrosEvento;
     }
 }
