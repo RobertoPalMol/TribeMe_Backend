@@ -461,23 +461,17 @@ public class TribusController {
         System.out.println("🔍 [getMisTribus] Authentication: " + authentication);
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            System.out.println("❌ [getMisTribus] No autenticado o nulo");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
 
-        System.out.println("✅ [getMisTribus] Usuario autenticado: " + authentication.getName());
-
         Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
         if (usuarioOpt.isEmpty()) {
-            System.out.println("❌ [getMisTribus] Usuario no encontrado con correo: " + authentication.getName());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
 
         Usuarios usuario = usuarioOpt.get();
-        System.out.println("✅ [getMisTribus] Usuario encontrado: " + usuario.getNombre());
 
         List<Tribus> misTribus = usuario.getTribus();
-        System.out.println("📦 [getMisTribus] Número de tribus encontradas: " + misTribus.size());
 
         List<TribuDTO> dtos = misTribus.stream()
                 .map(tribu -> {
