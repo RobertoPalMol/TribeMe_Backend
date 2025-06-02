@@ -66,7 +66,14 @@ public class JwtTokenProvider {
 
     // Método para obtener la autenticación a partir del token
     public Authentication getAuthentication(String token) {
-        String username = getUsername(token);
-        return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+        Claims claims = getClaims(token);
+        Long usuarioId = ((Number) claims.get("usuarioId")).longValue();
+        String nombre = (String) claims.get("nombre");
+        String correo = (String) claims.get("correo");
+
+        CustomUserPrincipal principal = new CustomUserPrincipal(usuarioId, nombre, correo);
+
+        return new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     }
+
 }

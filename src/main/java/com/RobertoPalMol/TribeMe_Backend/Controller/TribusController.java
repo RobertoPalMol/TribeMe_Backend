@@ -39,8 +39,6 @@ import java.nio.file.Paths;
 @RequestMapping("/api/tribus")
 public class TribusController {
 
-    private static final Logger log = LoggerFactory.getLogger(TribusController.class);
-
     private final ImageService imageService;
 
     @Autowired
@@ -65,7 +63,6 @@ public class TribusController {
 
     @GetMapping
     public ResponseEntity<List<TribuDTO>> getAllTribus(Authentication authentication) {
-        log.debug("getAllTribus called, principal={}", authentication != null ? authentication.getName() : "anonymous");
 
         List<TribuDTO> dtos = tribuRepository.findAll().stream()
                 .map(tribu -> {
@@ -102,50 +99,6 @@ public class TribusController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<TribuDTO> getTribuById(
-            @PathVariable Long id,
-            Authentication authentication) {
-
-        Optional<Tribus> opt = tribuRepository.findById(id);
-        if (opt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Tribus tribu = opt.get();
-
-        List<String> nombresCat = tribu.getCategorias().stream()
-                .map(Categorias::getNombre)
-                .collect(Collectors.toList());
-
-        List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
-                .map(u -> new UsuarioDTO(
-                        u.getUsuarioId(),
-                        u.getCorreo(),
-                        u.getNombre(),
-                        u.getImagen(),
-                        u.getFechaCreacion()
-                ))
-                .collect(Collectors.toList());
-
-        TribuDTO dto = new TribuDTO(
-                tribu.getTribuId(),
-                tribu.getNombre(),
-                tribu.getDescripcion(),
-                tribu.getImagen(),
-                nombresCat,
-                tribu.getUsuariosMaximos(),
-                tribu.isTribuPrivada(),
-                tribu.getFechaCreacion(),
-                tribu.getTribuCreador().getUsuarioId().toString(),
-                tribu.getTribuCreador().getNombre(),
-                miembrosDto,
-                tribu.getUbicacion(),
-                tribu.isCrearEventos()
-        );
-
-        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
@@ -454,60 +407,5 @@ public class TribusController {
                     .body("Error al leer la imagen: " + e.getMessage());
         }
     }
-
-
-    @GetMapping("/mistribus")
-    public ResponseEntity<?> getMisTribus(Authentication authentication) {
-        System.out.println("🔍 [getMisTribus] Authentication: " + authentication);
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
-        }
-
-        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
-
-        Usuarios usuario = usuarioOpt.get();
-
-        List<Tribus> misTribus = usuario.getTribus();
-
-        List<TribuDTO> dtos = misTribus.stream()
-                .map(tribu -> {
-                    List<String> nombresCat = tribu.getCategorias().stream()
-                            .map(Categorias::getNombre)
-                            .collect(Collectors.toList());
-
-                    List<UsuarioDTO> miembrosDto = tribu.getMiembrosTribu().stream()
-                            .map(u -> new UsuarioDTO(
-                                    u.getUsuarioId(),
-                                    u.getCorreo(),
-                                    u.getNombre(),
-                                    u.getImagen(),
-                                    u.getFechaCreacion()
-                            ))
-                            .collect(Collectors.toList());
-
-                    return new TribuDTO(
-                            tribu.getTribuId(),
-                            tribu.getNombre(),
-                            tribu.getDescripcion(),
-                            tribu.getImagen(),
-                            nombresCat,
-                            tribu.getUsuariosMaximos(),
-                            tribu.isTribuPrivada(),
-                            tribu.getFechaCreacion(),
-                            tribu.getTribuCreador().getUsuarioId().toString(),
-                            tribu.getTribuCreador().getNombre(),
-                            miembrosDto,
-                            tribu.getUbicacion(),
-                            tribu.isCrearEventos()
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(dtos);
-    }
-
 }
+

@@ -29,6 +29,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // Intenta extraer el token JWT de la solicitud
         String token = resolveToken(request);
 
+        System.out.println("Filtrando JWT");
+
         // Si se encuentra un token y es válido, se procesa la autenticación
         if (token != null && tokenProvider.validateToken(token)) {
             // Se obtiene la autenticación asociada al token
