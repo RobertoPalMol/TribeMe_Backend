@@ -11,15 +11,13 @@ import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
 import com.RobertoPalMol.TribeMe_Backend.Service.EventoService;
 import com.RobertoPalMol.TribeMe_Backend.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,8 +26,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/eventos")
 public class EventosController {
 
-    private static final Logger log = LoggerFactory.getLogger(EventosController.class);
-
     @Autowired
     private EventosRepository eventoRepository;
 
@@ -37,118 +33,60 @@ public class EventosController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    private EventoService eventoService;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
     private TribuRepository tribuRepository;
-    private final EventoService eventoService;
-    private final UsuarioService usuarioService;
 
-    public EventosController(EventoService eventoService, UsuarioService usuarioService) {
-        this.eventoService = eventoService;
-        this.usuarioService = usuarioService;
-    }
 
+    // Obtener todos los eventos con mapeo a DTO individual
     @GetMapping
-    public ResponseEntity<List<EventoDTO>> getAllEventos(Authentication authentication) {
-        List<EventoDTO> eventos = eventoRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(eventos);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<EventoDTO> getEventoById(
-            @PathVariable Long id,
-            Authentication authentication) {
-
-        Optional<Usuarios> userOpt = usuarioRepository.findByCorreo(authentication.getName());
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        Optional<Eventos> eventoOpt = eventoRepository.findByIdWithMembers(id);
-        if (eventoOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Eventos evento = eventoOpt.get();
-
-        List<UsuarioDTO> miembrosDto = evento.getMiembrosEvento().stream()
-                .map(u -> new UsuarioDTO(
-                        u.getUsuarioId(),
-                        u.getNombre(),
-                        u.getCorreo(),
-                        u.getImagen(),
-                        u.getFechaCreacion()
-                ))
-                .collect(Collectors.toList());
-
-        EventoDTO dto = new EventoDTO(
-                evento.getEventoId(),
-                evento.getNombre(),
-                evento.getDescripcion(),
-                evento.getHora(),
-                evento.getLugar(),
-                evento.getTribu().getTribuId(),
-                miembrosDto
-        );
-
-        return ResponseEntity.ok(dto);
-    }
-
-
-    @PostMapping
-    public ResponseEntity<EventoDTO> createEvento(@RequestBody EventoDTO dto, Authentication authentication) {
-        Optional<Usuarios> userOpt = usuarioRepository.findByCorreo(authentication.getName());
-        if (userOpt.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-        Optional<Tribus> tribuOpt = tribuRepository.findById(dto.getTribuId());
-        if (tribuOpt.isEmpty()) return ResponseEntity.badRequest().build();
-
-        Usuarios creador = userOpt.get();
-        Tribus tribu = tribuOpt.get();
-
-        Eventos evento = new Eventos();
-        evento.setNombre(dto.getNombre());
-        evento.setDescripcion(dto.getDescripcion());
-        evento.setHora(dto.getHora());
-        evento.setLugar(dto.getLugar());
-        evento.setFechaCreacion(LocalDateTime.now());
-        evento.setFechaModificacion(LocalDateTime.now());
-        evento.setEventoCreador(creador);
-        evento.setTribu(tribu);
-
-        eventoRepository.save(evento);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(evento));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvento(@PathVariable Long id, Authentication authentication) {
-        Optional<Usuarios> userOpt = usuarioRepository.findByCorreo(authentication.getName());
-        if (userOpt.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-        Optional<Eventos> eventoOpt = eventoRepository.findById(id);
-        if (eventoOpt.isEmpty()) return ResponseEntity.notFound().build();
-
-        Eventos evento = eventoOpt.get();
-        if (!evento.getEventoCreador().getCorreo().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        eventoRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/tribu/{tribuId}")
-    public ResponseEntity<List<EventoDTO>> getEventosByTribu(@PathVariable Long tribuId, Authentication authentication) {
-        Optional<Usuarios> userOpt = usuarioRepository.findByCorreo(authentication.getName());
-        if (userOpt.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-        List<EventoDTO> dtos = eventoRepository.findByTribu_TribuId(tribuId).stream()
-                .map(this::mapToDTO)
+    public ResponseEntity<List<EventoDTO>> getAllEventos() {
+        List<EventoDTO> dtos = eventoRepository.findAll().stream()
+                .map(evento -> mapEventoToDTO(evento))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
     }
 
+    // Crear un evento nuevo
+    @PostMapping
+    public ResponseEntity<?> createEvento(@RequestBody EventoDTO eventoDTO, Authentication authentication) {
+        Optional<Usuarios> optUser = usuarioRepository.findByCorreo(authentication.getName());
+        if (optUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Tribus> tribuOpt = tribuRepository.findById(eventoDTO.getTribuId());
+        if (tribuOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tribu no encontrada");
+        }
+
+
+        Usuarios creador = optUser.get();
+
+        Eventos evento = new Eventos();
+        evento.setNombre(eventoDTO.getNombre());
+        evento.setDescripcion(eventoDTO.getDescripcion());
+        evento.setHora(eventoDTO.getHora());
+        evento.setLugar(eventoDTO.getLugar());
+        evento.setFechaCreacion(LocalDateTime.now());
+        evento.setFechaModificacion(LocalDateTime.now());
+        evento.setEventoCreador(creador);
+        evento.setTribu(tribuOpt.get());
+        evento.setMiembrosEvento(new ArrayList<>());
+        evento.getMiembrosEvento().add(creador);
+
+        Eventos guardado = eventoRepository.save(evento);
+
+        EventoDTO resp = mapEventoToDTO(guardado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+    }
+
+    // Unirse a un evento
     @PostMapping("/{eventoId}/unirse/{usuarioId}")
     public ResponseEntity<?> unirseAEvento(@PathVariable Long eventoId, @PathVariable Long usuarioId) {
         try {
@@ -160,20 +98,36 @@ public class EventosController {
             }
 
             if (evento.getMiembrosEvento().contains(usuario)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya estás inscrito en este evento");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya estás en este evento");
             }
 
             evento.getMiembrosEvento().add(usuario);
+            usuario.getEventos().add(evento);
 
+            usuarioService.guardar(usuario);
             eventoService.guardar(evento);
 
             return ResponseEntity.ok("Te has unido al evento correctamente");
         } catch (Exception e) {
-            log.error("Error al unirse al evento", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al unirse al evento: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al unirse al evento: " + e.getMessage());
         }
     }
 
+    @GetMapping("/tribu/{tribuId}")
+    public ResponseEntity<List<EventoDTO>> getEventosByTribu(@PathVariable Long tribuId, Authentication authentication) {
+        Optional<Usuarios> userOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (userOpt.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<EventoDTO> dtos = eventoRepository.findByTribu_TribuId(tribuId).stream()
+                .map(this::mapEventoToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+
+    // Salir de un evento
     @DeleteMapping("/{eventoId}/salir/{usuarioId}")
     public ResponseEntity<?> salirDeEvento(@PathVariable Long eventoId, @PathVariable Long usuarioId) {
         try {
@@ -185,7 +139,7 @@ public class EventosController {
             }
 
             if (!evento.getMiembrosEvento().contains(usuario)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("No estás inscrito en este evento");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("No perteneces a este evento");
             }
 
             evento.getMiembrosEvento().remove(usuario);
@@ -196,31 +150,105 @@ public class EventosController {
 
             return ResponseEntity.ok("Has salido del evento correctamente");
         } catch (Exception e) {
-            log.error("Error al salir del evento", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al salir del evento: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al salir del evento: " + e.getMessage());
         }
     }
 
-    // Mapeo de entidad Eventos a DTO EventoDTO
-    private EventoDTO mapToDTO(Eventos e) {
-        List<UsuarioDTO> miembros = e.getMiembrosEvento().stream()
+    // Actualizar evento (solo creador)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEvento(@PathVariable Long id, @RequestBody EventoDTO updatedEvento, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Usuarios usuario = usuarioOpt.get();
+
+        Optional<Eventos> optEvento = eventoRepository.findById(id);
+        if (optEvento.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Eventos evento = optEvento.get();
+
+        if (!evento.getEventoCreador().getUsuarioId().equals(usuario.getUsuarioId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para editar este evento");
+        }
+
+        evento.setNombre(updatedEvento.getNombre());
+        evento.setDescripcion(updatedEvento.getDescripcion());
+        evento.setHora(updatedEvento.getHora());
+        evento.setLugar(updatedEvento.getLugar());
+        evento.setFechaModificacion(LocalDateTime.now());
+
+        eventoRepository.save(evento);
+
+        return ResponseEntity.ok("Evento actualizado correctamente");
+    }
+
+    // Eliminar evento (solo creador)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteEvento(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Eventos> eventoOpt = eventoRepository.findById(id);
+        if (eventoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Eventos evento = eventoOpt.get();
+        Usuarios usuario = usuarioOpt.get();
+
+        if (!evento.getEventoCreador().getUsuarioId().equals(usuario.getUsuarioId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para eliminar este evento");
+        }
+
+        // Eliminar la relación en cada usuario miembro
+        for (Usuarios miembro : evento.getMiembrosEvento()) {
+            miembro.getEventos().remove(evento);
+            usuarioRepository.save(miembro);
+        }
+
+        evento.getMiembrosEvento().clear();
+        eventoRepository.save(evento);
+
+        eventoRepository.delete(evento);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // Método privado para mapear un Evento a EventoDTO individualmente
+    private EventoDTO mapEventoToDTO(Eventos evento) {
+        List<UsuarioDTO> miembrosDto = evento.getMiembrosEvento().stream()
                 .map(u -> new UsuarioDTO(
                         u.getUsuarioId(),
-                        u.getNombre(),
                         u.getCorreo(),
+                        u.getNombre(),
                         u.getImagen(),
                         u.getFechaCreacion()
                 ))
                 .collect(Collectors.toList());
 
         return new EventoDTO(
-                e.getEventoId(),
-                e.getNombre(),
-                e.getDescripcion(),
-                e.getHora(),
-                e.getLugar(),
-                e.getTribu().getTribuId(),
-                miembros
+                evento.getEventoId(),
+                evento.getNombre(),
+                evento.getDescripcion(),
+                evento.getHora(),
+                evento.getLugar(),
+                evento.getTribu().getTribuId(),
+                miembrosDto
         );
     }
 }

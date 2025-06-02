@@ -64,6 +64,10 @@ public class TribusController {
     @GetMapping
     public ResponseEntity<List<TribuDTO>> getAllTribus(Authentication authentication) {
 
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         List<TribuDTO> dtos = tribuRepository.findAll().stream()
                 .map(tribu -> {
                     List<String> nombresCat = tribu.getCategorias().stream()

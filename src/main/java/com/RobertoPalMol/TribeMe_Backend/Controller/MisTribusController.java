@@ -6,7 +6,6 @@ import com.RobertoPalMol.TribeMe_Backend.Entity.Categorias;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Tribus;
 import com.RobertoPalMol.TribeMe_Backend.Entity.Usuarios;
 import com.RobertoPalMol.TribeMe_Backend.Repository.UsuarioRepository;
-import com.RobertoPalMol.TribeMe_Backend.SecurityConfig.CustomUserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,23 +27,12 @@ public class MisTribusController {
 
     @GetMapping
     public ResponseEntity<?> getMisTribus(Authentication authentication) {
-        System.out.println("Autenticación recibida: " + authentication);
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
 
-        Object principal = authentication.getPrincipal();
-        System.out.println("Principal: " + principal);
-
-        if (!(principal instanceof CustomUserPrincipal)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Principal inválido: " + principal);
-        }
-
-        CustomUserPrincipal user = (CustomUserPrincipal) principal;
-        System.out.println("Usuario autenticado: " + user.getNombre());
-
-        Optional<Usuarios> usuarioOpt = usuarioRepository.findById(user.getId());
+        Optional<Usuarios> usuarioOpt = usuarioRepository.findByCorreo(authentication.getName());
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }

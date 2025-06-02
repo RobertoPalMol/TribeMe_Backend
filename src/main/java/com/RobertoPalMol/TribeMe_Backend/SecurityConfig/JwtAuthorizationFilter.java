@@ -29,16 +29,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // Intenta extraer el token JWT de la solicitud
         String token = resolveToken(request);
 
-        System.out.println("Filtrando JWT");
-
         // Si se encuentra un token y es válido, se procesa la autenticación
         if (token != null && tokenProvider.validateToken(token)) {
             // Se obtiene la autenticación asociada al token
             Authentication authentication = tokenProvider.getAuthentication(token);
             // Se establece la autenticación en el contexto de seguridad de Spring
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
         }
+
         // Se continúa con el siguiente filtro en la cadena de filtros
         filterChain.doFilter(request, response);
     }
@@ -54,5 +52,4 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // Si no se encuentra un token válido, se retorna null
         return null;
     }
-
 }

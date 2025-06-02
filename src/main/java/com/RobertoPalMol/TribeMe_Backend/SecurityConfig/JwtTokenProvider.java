@@ -16,13 +16,14 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private final String SECRET_KEY = "mi_clave_super_secreta_de_32_chars!!";
+    private static final String SECRET_KEY = "UnaClaveSuperSeguraQueTengaAlMenos32Caracteres!";
+
     private final long validityInMilliseconds = 3600000;  // 1 hora de validez
 
     // Método para generar el token
     public String generateToken(Usuarios usuario) {
         Claims claims = Jwts.claims();
-        claims.setSubject(usuario.getCorreo());
+        claims.setSubject(usuario.getCorreo()); // sub
         claims.put("usuarioId", usuario.getUsuarioId());
         claims.put("nombre", usuario.getNombre());
         claims.put("correo", usuario.getCorreo());
@@ -37,6 +38,7 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes(StandardCharsets.UTF_8))
                 .compact();
     }
+
 
     // Método para obtener el nombre de usuario del token
     public String getUsername(String token) {
@@ -66,14 +68,7 @@ public class JwtTokenProvider {
 
     // Método para obtener la autenticación a partir del token
     public Authentication getAuthentication(String token) {
-        Claims claims = getClaims(token);
-        Long usuarioId = ((Number) claims.get("usuarioId")).longValue();
-        String nombre = (String) claims.get("nombre");
-        String correo = (String) claims.get("correo");
-
-        CustomUserPrincipal principal = new CustomUserPrincipal(usuarioId, nombre, correo);
-
-        return new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+        String username = getUsername(token);
+        return new UsernamePasswordAuthenticationToken(username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
-
 }

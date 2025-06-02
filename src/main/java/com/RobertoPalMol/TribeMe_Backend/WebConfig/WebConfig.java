@@ -8,9 +8,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.images.storage-folder}")
-    private String imagePath;
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
@@ -21,7 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/imagenes/**")
-                .addResourceLocations("file:" + imagePath + "/");
+        registry.addResourceHandler("/TribeMe_Backend/TribeMe/tribus/imagenes/**")
+                .addResourceLocations("file:/TribeMe_Backend/TribeMe/tribus/imagenes/");
     }
 }
