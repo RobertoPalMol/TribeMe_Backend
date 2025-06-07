@@ -1,5 +1,5 @@
-# Imagen base de Java 17
-FROM eclipse-temurin:17-jdk
+# Imagen base de Java
+FROM eclipse-temurin:21-jdk
 
 
 # Establece el directorio de trabajo dentro del contenedor
@@ -16,3 +16,4 @@ EXPOSE 8081
 
 # Comando para ejecutar el JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
