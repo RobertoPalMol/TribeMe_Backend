@@ -52,6 +52,12 @@ public class EventosController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Eventos> getEventById(@PathVariable Long id) {
+        Optional<Eventos> evento = eventoRepository.findById(id);
+        return evento.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     // Crear un evento nuevo
     @PostMapping
     public ResponseEntity<?> createEvento(@RequestBody EventoDTO eventoDTO, Authentication authentication) {
